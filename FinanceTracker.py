@@ -21,16 +21,50 @@ def save_transactions():
 # Feature implementations
 def add_transaction():
     print("Add a new transaction: ")
-    amount = float(input("Enter an Amount: "))
-    pass
+    amount = int(input("Enter an Amount: "))
+    category = input("Enter Transaction Name: ")
+    transaction_type = input("Enter Transaction Type( Income or Expense ): ")
+    date = input("Enter date (YYYY-MM-DD): ")
+    transaction = {"amount": amount, "category": category, "type": transaction_type, "date": date}
+    transactions.append(transaction)
+    print("Transaction Added Successfully!")
 
 def view_transactions():
-    pass
+    if not transactions:
+        print("No transactions available.")
+        return
+    print("Transactions:")
+    for i in range(len(transactions)):
+        transaction = transactions[i]
+        print(f"{i}. Amount: {transaction['amount']}, Category: {transaction['category']}, Type: {transaction['type']}, Date: {transaction['date']}")
+
 
 def update_transaction():
-    # Placeholder for update transaction logic
-    # Remember to use save_transactions() after updating
-    pass
+    if not transactions:
+        print("No transactions available.")
+        return
+    else:
+        print("Select a transaction to update: ")
+        for i in range(len(transactions)):
+            transaction = transactions[i]
+            print(f"{i}. Amount: {transaction['amount']}, Category: {transaction['category']}, Type: {transaction['type']}, Date: {transaction['date']}")
+
+            try:
+                selection = int(input("Enter the number of the transaction to update: "))
+                if selection <= len(transactions):
+                    transaction = transactions[selection]
+                    print("Update transaction details:")
+                    amount = int(input(f"Enter new amount (current: {transaction['amount']}): "))
+                    category = input(f"Enter new category (current: {transaction['category']}): ")
+                    transaction_type = input(f"Enter new transaction type (current: {transaction['type']}): ")
+                    date = input(f"Enter new date (YYYY-MM-DD) (current: {transaction['date']}): ")
+                    transactions[selection] = {"amount": amount, "category": category, "type": transaction_type, "date": date}
+                    save_transactions()
+                    print("Transaction updated successfully!")
+                else:
+                    print("Invalid selection. Please choose a valid transaction number.")
+            except ValueError:
+                print("Invalid input. Please enter a number.")
 
 def delete_transaction():
     # Placeholder for delete transaction logic
