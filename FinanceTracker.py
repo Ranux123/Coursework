@@ -1,79 +1,149 @@
 import json
+from datetime import datetime
 
 # Global list to store transactions
 transactions = []
 
 # File handling functions
 def load_transactions():
+    global transactions
     try:
-        with open('finance-tracker.json', 'r') as f: #Opening the file in read-only mode
-            data = json.load(f) #Loading the file data in to the variable 'data'
-            transactions.extend(data) #Adding the elements inside 'data' to transactions list
-        print("Loaded transactions successfully")
-    except FileNotFoundError: #Error Handling 
-        print("We can't find a 'finance-tracker.json' file")
+        with open('finance-tracker.json', 'r') as file:
+            transactions = json.load(file)
+    except FileNotFoundError:
+        transactions = []
+    except json.decoder.JSONDecodeError:
+        print("There are no transactions.")
+        transactions = []
+    print(transactions)
 
 def save_transactions():
-    with open('finance-tracker.json', 'w') as f:
-        json.dump(transactions, f) #Adding transactions list to the file as a string
-    print("Transactions saved successfully!")
+    with open('finance-tracker.json', 'w') as file:
+        json.dump(transactions, file)
 
 # Feature implementations
 def add_transaction():
-    print("Add a new transaction: ")
-    amount = int(input("Enter an Amount: "))
-    category = input("Enter Transaction Name: ")
-    transaction_type = input("Enter Transaction Type( Income or Expense ): ")
-    date = input("Enter date (YYYY-MM-DD): ")
-    transaction = {"amount": amount, "category": category, "type": transaction_type, "date": date}
+    
+    transaction_amount = validate_amount()
+    
+    transaction_category = validate_category()
+
+    transaction_type = validate_type()
+
+    transaction_date = validate_date()
+
+    transaction = [transaction_amount, transaction_category, transaction_type, transaction_date]
     transactions.append(transaction)
-    print("Transaction Added Successfully!")
+    print("Transaction added Successfully!")
+    save_transactions()
 
 def view_transactions():
     if not transactions:
-        print("No transactions available.")
-        return
-    print("Transactions:")
-    for i in range(len(transactions)):
-        transaction = transactions[i]
-        print(f"{i}. Amount: {transaction['amount']}, Category: {transaction['category']}, Type: {transaction['type']}, Date: {transaction['date']}")
+        print("No transactions found!")
+    else:
+        print("Transactions:")
+        for transaction in transactions:
+            print(transaction)
 
 
 def update_transaction():
-    if not transactions:
-        print("No transactions available.")
-        return
-    else:
-        print("Select a transaction to update: ")
-        for i in range(len(transactions)):
-            transaction = transactions[i]
-            print(f"{i}. Amount: {transaction['amount']}, Category: {transaction['category']}, Type: {transaction['type']}, Date: {transaction['date']}")
+    # Placeholder for update transaction logic
+    # Remember to use save_transactions() after updating
+    view_transactions()
+    index = int(input("Enter the index of transaction that you need to change : "))
+    if 0 < index <= len(transactions):
+        transaction_amount = validate_amount()
+    
+        transaction_category = validate_category()
 
-            try:
-                selection = int(input("Enter the number of the transaction to update: "))
-                if selection <= len(transactions):
-                    transaction = transactions[selection]
-                    print("Update transaction details:")
-                    amount = int(input(f"Enter new amount (current: {transaction['amount']}): "))
-                    category = input(f"Enter new category (current: {transaction['category']}): ")
-                    transaction_type = input(f"Enter new transaction type (current: {transaction['type']}): ")
-                    date = input(f"Enter new date (YYYY-MM-DD) (current: {transaction['date']}): ")
-                    transactions[selection] = {"amount": amount, "category": category, "type": transaction_type, "date": date}
-                    save_transactions()
-                    print("Transaction updated successfully!")
-                else:
-                    print("Invalid selection. Please choose a valid transaction number.")
-            except ValueError:
-                print("Invalid input. Please enter a number.")
+        transaction_type = validate_type()
+
+        transaction_date = validate_date()
+
+        transactions[index-1] = [transaction_amount, transaction_category, transaction_type, transaction_date]
+        print("Transaction Updates Successfully!")
+        save_transactions()
+    else: 
+        print("Transactions not found!")
 
 def delete_transaction():
+    view_transactions()
     # Placeholder for delete transaction logic
     # Remember to use save_transactions() after deleting
-    pass
+    index = int(input("Enter the index of transaction : "))
+    while True:
+        if 0 <= index <= len(transactions):
+            del transactions[index-1]
+            print("Transaction deleted successfully!")
+            save_transactions()
+            break
+        else:
+            print("Transaction doesn't exist. Please enter a index greater than 0")
+            index = int(input("Enter the index of transaction : "))
 
 def display_summary():
     # Placeholder for summary display logic
-    pass
+    count = len(transactions)
+    print(f'(No. of transactions : {count})')
+    total_income = 0
+    total_expense = 0
+    for transaction in transactions:
+        if transaction[2] == 'Income':
+            total_income += transaction[0]
+    for transaction in transactions:
+        if transaction[2] == 'Expense':
+            total_expense += transaction[0]
+
+    net_balance = total_income - total_expense
+
+    print(f'Total Income : {total_income}')
+    print(f'Total Expenses : {total_expense}')
+    print(f'Net Balance : {net_balance}')
+
+
+#Functions that i created
+
+def validate_amount():
+    while True:
+        try:
+            transaction_amount = float(input("Enter the Amount : "))
+            if transaction_amount <= 0:
+                print("Please enter a value more than 0")
+            else:
+                return transaction_amount
+        except ValueError:
+            print("Please enter a numeric value")
+
+def validate_category():
+    while True:
+        transaction_category = input("Enter the Category : ").lower().capitalize()
+        if transaction_category.isdigit():
+            print("Category cannot be a numeric value. Please enter a description of the transaction.")
+        else:
+            transaction_category = transaction_category.lower().capitalize()
+            return transaction_category
+
+def validate_type():
+    while True:
+        transaction_type = str(input("Enter the Type : ")).lower().capitalize()
+        if transaction_type == "Income" or transaction_type == "Expense":
+            return transaction_type
+        else:
+            print("Please enter a valid transaction type (Income | Expense)")
+
+def validate_date():
+    while True:
+        transaction_year = input("Enter the Year (YYYY->2024): ")
+        transaction_month = input("Enter the Month (MM->04): ")
+        transaction_day = input("Enter the Day (DD-04): ")
+        transaction_date = f'{transaction_year}-{transaction_month}-{transaction_day}'
+
+        try: 
+            datetime.strptime(transaction_date, "%Y-%m-%d")
+            return transaction_date
+        except ValueError:
+            print("Invalid date. Please enter the date in the asked format.")
+          
 
 def main_menu():
     load_transactions()  # Load transactions at the start
